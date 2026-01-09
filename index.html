@@ -639,7 +639,7 @@
 <!-- 遮罩层（外层不滚动） -->
 <div class="mask" id="mask">
     <!-- 滚动容器（仅这里滚动） -->
-    <div class="scroll-wrapper" id="scrollWrapper">
+    <div class="scroll-wrapper" id="scrollWrapper"  style="overflow: auto">
         <!-- 替换原空容器：为每个项目创建独立内容div，默认隐藏 -->
 
         <!-- 项目1：建业集团项目管理  开始-->
@@ -727,7 +727,7 @@
         <!-- 项目3：UI中国 结束-->
 
         <!-- 项目4：视觉设计 开始-->
-        <div class="detail-container project-content" id="visual-content">
+        <div class="detail-container project-content" id="visual-content" >
             <!-- 自定义文字 -->
             <div class="project-text" style="padding: 2rem; color: #fff;">
                 <h2 style="font-size: 2.8rem; margin-bottom: 1rem;">我的日常</h2>
@@ -843,17 +843,18 @@
                 </div>
             </div>
             <!-- 第二部分：三个并排的视频结束 -->
-
-
         </div>
         <!-- 项目5：c4d 结束-->
 
 
+
     </div>
+
+    <div class="close-btn" id="closeBtn">×</div>
 </div>
 
 <!-- 关闭按钮 -->
-<div class="close-btn" id="closeBtn">×</div>
+
 
 <script>
     const triggerBtns = document.querySelectorAll('.trigger-btn');
@@ -872,68 +873,76 @@
     // 打开弹窗（核心：根据data-project显示对应内容）
     triggerBtns.forEach(btn => {
         btn.addEventListener('click', function() {
-            // 1. 隐藏所有项目内容
+            // 1. 保存当前主页滚动位置
+            localStorage.setItem('scrollTop', window.scrollY);
+
+            // 2. 隐藏所有项目内容
             projectContents.forEach(content => {
                 content.style.display = 'none';
             });
 
-            // 2. 获取当前点击的项目ID（如jianye/dash）
+            // 3. 获取当前点击的项目ID（如jianye/dash）
             const projectId = this.getAttribute('data-project');
-            // 3. 显示对应项目的内容div
+
+            // 4. 显示对应项目的内容div
             const targetContent = document.getElementById(`${projectId}-content`);
             if (targetContent) {
                 targetContent.style.display = 'block';
             }
 
-            // 4. 显示弹窗 + 锁定主页（保留原有逻辑）
+            // 5. 显示弹窗 + 锁定页面
             mask.classList.add('active');
             closeBtn.classList.add('active');
-            body.classList.add('lock');
+            document.documentElement.classList.add('lock'); // 锁定html
+            body.classList.add('lock'); // 锁定body
 
-            // 5. 重置滚动位置到顶部
+            // 6. 重置弹窗滚动位置到顶部（关键：每次打开都从头开始）
             scrollWrapper.scrollTop = 0;
 
-            // 6. 阻止滚动事件冒泡到主页（保留原有逻辑）
+            // 7. 阻止滚动事件冒泡到主页
             scrollWrapper.addEventListener('wheel', function(e) {
                 e.stopPropagation();
             }, { passive: true });
-
-            // 7. 记录主页滚动位置（保留原有逻辑）
-            localStorage.setItem('scrollTop', window.scrollY);
         });
     });
 
-    // 关闭弹窗（保留原有逻辑，新增隐藏所有项目内容）
+    // 关闭弹窗
     function closeDetail() {
         mask.classList.remove('active');
         closeBtn.classList.remove('active');
-        body.classList.remove('lock');
+        document.documentElement.classList.remove('lock'); // 解除html锁定
+        body.classList.remove('lock'); // 解除body锁定
+
         // 隐藏所有项目内容
         projectContents.forEach(content => {
             content.style.display = 'none';
         });
+
+        // 重置弹窗滚动位置
         scrollWrapper.scrollTop = 0;
-        // 恢复主页滚动位置
+
+        // 恢复主页滚动位置（恢复到关闭前的位置）
         const scrollTop = parseInt(localStorage.getItem('scrollTop') || 0);
         window.scrollTo(0, scrollTop);
     }
 
-    // 关闭按钮事件（保留）
+    // 关闭按钮事件
     closeBtn.addEventListener('click', closeDetail);
 
-    // 点击遮罩空白处关闭（保留）
+    // 点击遮罩空白处关闭
     mask.addEventListener('click', function(e) {
         if (e.target === mask) {
             closeDetail();
         }
     });
 
-    // ESC键关闭（保留）
+    // ESC键关闭
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeDetail();
         }
     });
+
 </script>
 
 <!--    弹窗结束-->
@@ -981,63 +990,59 @@
         });
     });
 </script>
-
-
 <!--视频中间播放js  结束-->
-
 
 
 <!--禁止保存图片代码 开始-->
 
 <!-- 弹窗样式部分：补充禁止操作的CSS -->
 
+<!--<style>-->
+<!--    /* 原有弹窗样式... */-->
+<!--    /* 新增禁止保存的CSS */-->
+<!--    body {-->
+<!--        -webkit-user-select: none;-->
+<!--        -moz-user-select: none;-->
+<!--        -ms-user-select: none;-->
+<!--        user-select: none;-->
+<!--    }-->
+<!--    img, video {-->
+<!--        -webkit-user-drag: none;-->
+<!--        -moz-user-drag: none;-->
+<!--        user-drag: none;-->
+<!--        pointer-events: auto;-->
+<!--    }-->
+<!--    video::-webkit-media-controls-download-button {-->
+<!--        display: none !important;-->
+<!--    }-->
+<!--</style>-->
 
-<style>
-    /* 原有弹窗样式... */
-    /* 新增禁止保存的CSS */
-    body {
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-    img, video {
-        -webkit-user-drag: none;
-        -moz-user-drag: none;
-        user-drag: none;
-        pointer-events: auto;
-    }
-    video::-webkit-media-controls-download-button {
-        display: none !important;
-    }
-</style>
+<!--&lt;!&ndash; 原有弹窗JS... &ndash;&gt;-->
 
-<!-- 原有弹窗JS... -->
-
-<!-- 新增禁止右键/快捷键的JS -->
-<script>
-    document.addEventListener('contextmenu', function(e) {
-        if (e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO') {
-            e.preventDefault();
-        }
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.key === 's') {e.preventDefault();}
-        if (e.ctrlKey && e.key === 'c') {e.preventDefault();}
-        if (e.key === 'F12') {e.preventDefault();}
-        if (e.ctrlKey && e.shiftKey && e.key === 'i') {e.preventDefault();}
-        if (e.ctrlKey && e.key === 'u') {e.preventDefault();}
-    });
-    document.addEventListener('dragstart', function(e) {
-        if (e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO') {
-            e.preventDefault();
-        }
-    });
-    document.querySelectorAll('video').forEach(video => {
-        video.setAttribute('controlslist', 'nodownload');
-        video.setAttribute('disablePictureInPicture', true);
-    });
-</script>
+<!--&lt;!&ndash; 新增禁止右键/快捷键的JS &ndash;&gt;-->
+<!--<script>-->
+<!--    document.addEventListener('contextmenu', function(e) {-->
+<!--        if (e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO') {-->
+<!--            e.preventDefault();-->
+<!--        }-->
+<!--    });-->
+<!--    document.addEventListener('keydown', function(e) {-->
+<!--        if (e.ctrlKey && e.key === 's') {e.preventDefault();}-->
+<!--        if (e.ctrlKey && e.key === 'c') {e.preventDefault();}-->
+<!--        if (e.key === 'F12') {e.preventDefault();}-->
+<!--        if (e.ctrlKey && e.shiftKey && e.key === 'i') {e.preventDefault();}-->
+<!--        if (e.ctrlKey && e.key === 'u') {e.preventDefault();}-->
+<!--    });-->
+<!--    document.addEventListener('dragstart', function(e) {-->
+<!--        if (e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO') {-->
+<!--            e.preventDefault();-->
+<!--        }-->
+<!--    });-->
+<!--    document.querySelectorAll('video').forEach(video => {-->
+<!--        video.setAttribute('controlslist', 'nodownload');-->
+<!--        video.setAttribute('disablePictureInPicture', true);-->
+<!--    });-->
+<!--</script>-->
 
 
 <!--禁止保存图片代码 结束-->
