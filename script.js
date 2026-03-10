@@ -10,6 +10,10 @@
     const SCROLL_OFFSET_DESKTOP = 40;
     const BREAKPOINT_LG = 1024;
 
+    // 【新增】：用来锁定 Scroll Spy（滚动监听）的状态变量
+    let isManualScrolling = false;
+    let manualScrollTimer = null;
+
     /**
      * 辅助函数：切换移动端菜单状态
      * @param {boolean} shouldOpen - true 打开, false 关闭
@@ -58,6 +62,10 @@
         const element = document.getElementById(id);
         if (!element) return;
 
+        // 【新增】：开启点击滚动锁，并立即高亮目标导航
+        isManualScrolling = true;
+        highlightNav(id);
+
         const isMobile = window.innerWidth < BREAKPOINT_LG;
         const offset = isMobile ? SCROLL_OFFSET_MOBILE : SCROLL_OFFSET_DESKTOP;
 
@@ -78,9 +86,6 @@
         if (isMobile && sidebar && sidebar.classList.contains('open')) {
             toggleMobileMenuLogic(false);
         }
-
-        // 立即手动高亮（提升响应速度，不用等 Observer 回调）
-        highlightNav(id);
     };
 
     /**
@@ -110,6 +115,9 @@
         };
 
         const observer = new IntersectionObserver((entries) => {
+            // 【新增】：如果正在进行点击跳转的滚动，忽略中途的触发
+            if (isManualScrolling) return;
+
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     highlightNav(entry.target.id);
@@ -122,7 +130,7 @@
             observer.observe(section);
         });
 
-        // 3. 回到顶部时清除高亮 (添加了节流优化)
+        // 3. 回到顶部时清除高亮 (添加了节流优化) + 滚动结束解锁机制
         let scrollTimeout;
         window.addEventListener('scroll', () => {
             if (!scrollTimeout) {
@@ -132,6 +140,14 @@
                     }
                     scrollTimeout = null;
                 });
+            }
+
+            // 【新增】：利用防抖机制，检测平滑滚动是否结束，结束则解锁
+            if (isManualScrolling) {
+                clearTimeout(manualScrollTimer);
+                manualScrollTimer = setTimeout(() => {
+                    isManualScrolling = false;
+                }, 100); // 只要页面停顿超过 100ms，就认为滚动结束了，解开状态锁
             }
         }, { passive: true });
 
@@ -153,8 +169,6 @@
 
             videos.forEach(video => {
                 videoObserver.observe(video);
-                // 可选：为了确保移动端低电量模式不卡死，可以移除默认的 autoplay 属性
-                // video.removeAttribute('autoplay');
             });
         }
 
