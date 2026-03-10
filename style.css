@@ -326,9 +326,14 @@ a { text-decoration: none; color: inherit; }
     padding: 0rem;
     border: 1px solid rgba(0,0,0,0.05);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-    /* 明确 transition 属性，加入 background-color */
     transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out), background-color 0.3s var(--ease-out);
     overflow: hidden;
+
+    /* 【新增】：强制开启硬件加速，创建独立渲染层，防止 Chrome 崩溃 */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    /* 【新增】：提前告知浏览器哪些属性会发生变化，预先分配资源 */
+    will-change: transform, box-shadow;
 }
 .ui-card:hover {
     /* 将原本的 -5px 改为 -12px，数值越大，向上浮动的幅度越大 */
@@ -555,10 +560,14 @@ a { text-decoration: none; color: inherit; }
     }
 }
 
+/* UI中国项目专属样式区 */
 #project-04 .ui-card {
     position: relative;
     background: var(--color-white);
     transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
+
+    /* 继承基础卡片的硬件加速设定 */
+    transform: translateZ(0);
 }
 
 #project-04 .ui-card:hover {
@@ -1055,12 +1064,15 @@ a { text-decoration: none; color: inherit; }
     /* 3. 加上这行，防止撑大的不可见光晕层挡住下方的点击事件 */
     pointer-events: none;
 }
+/* 修改前：阴影是浅黑色，且没加过渡属性 */
 .ip-hero-frame {
     background: #ffffff;
     border-radius: 2.5rem;
     padding: 0.5rem;
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0,0,0,0.03);
-    transition: transform 0.5s var(--ease-out);
+    /* 【修改】：使用带有品牌红/橘色的双层深阴影，第一层负责基础投影，第二层负责大范围的光晕扩展 */
+    box-shadow: 0 25px 50px -12px rgba(219, 76, 59, 0.3), 0 10px 20px -5px rgba(219, 76, 59, 0.15);
+    /* 【修改】：必须把 box-shadow 加入 transition，否则鼠标移上去阴影变化会很生硬 */
+    transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
 }
 
 .ip-hero-img {
@@ -1075,8 +1087,12 @@ a { text-decoration: none; color: inherit; }
     .ip-hero-img { border-radius: 2.25rem; }
 }
 
+/* 悬停交互：让阴影和卡片一起“浮”起来 */
 .ip-premium-hero:hover .ip-hero-frame {
-    transform: translateY(-8px);
+    /* 原来的高度只有 -8px，我帮你稍微调大了一点，配合阴影更有悬浮感 */
+    transform: translateY(-12px);
+    /* 【新增】：鼠标悬停时，阴影大幅度向下扩散，并且颜色变深 */
+    box-shadow: 0 45px 80px -15px rgba(219, 76, 59, 0.45), 0 15px 30px -5px rgba(219, 76, 59, 0.2);
 }
 .ip-premium-hero:hover .ip-hero-glow {
     opacity: 0.65;
