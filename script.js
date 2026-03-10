@@ -122,12 +122,42 @@
             observer.observe(section);
         });
 
-        // 3. 回到顶部时清除高亮 (Hero区域逻辑)
+        // 3. 回到顶部时清除高亮 (添加了节流优化)
+        let scrollTimeout;
         window.addEventListener('scroll', () => {
-            if (window.scrollY < 200) {
-                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            if (!scrollTimeout) {
+                scrollTimeout = requestAnimationFrame(() => {
+                    if (window.scrollY < 200) {
+                        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                    }
+                    scrollTimeout = null;
+                });
             }
         }, { passive: true });
+
+        // 4. 视频性能优化：按需播放 (Intersection Observer)
+        const videos = document.querySelectorAll('video');
+        if (videos.length > 0) {
+            // 设置观察器：当视频有 10% 进入屏幕时触发
+            const videoObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // 进入视口，开始播放
+                        entry.target.play().catch(err => console.log("视频自动播放被拦截:", err));
+                    } else {
+                        // 离开视口，暂停播放以释放内存
+                        entry.target.pause();
+                    }
+                });
+            }, { rootMargin: '50px', threshold: 0.1 });
+
+            videos.forEach(video => {
+                videoObserver.observe(video);
+                // 可选：为了确保移动端低电量模式不卡死，可以移除默认的 autoplay 属性
+                // video.removeAttribute('autoplay');
+            });
+        }
+
     });
 
 })();
